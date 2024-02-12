@@ -1,0 +1,37 @@
+# main.py
+
+import pandas as pd
+import numpy as np
+import tensorflow_decision_forests as tfdf
+
+# Función para cargar datos desde un archivo CSV
+def cargar_datos(ruta_archivo):
+    dataset_df = pd.read_csv(ruta_archivo)
+    # Realiza cualquier preprocesamiento adicional aquí
+    return dataset_df
+
+# Función para dividir el conjunto de datos en entrenamiento y validación
+def dividir_conjunto_datos(dataset_df, test_ratio=0.2):
+    test_indices = np.random.rand(len(dataset_df)) < test_ratio
+    train_ds_pd = dataset_df[~test_indices]
+    valid_ds_pd = dataset_df[test_indices]
+    return train_ds_pd, valid_ds_pd
+
+# Función para entrenar el modelo de Bosque Aleatorio
+def entrenar_modelo(train_ds_pd, label):
+    train_ds = tfdf.keras.pd_dataframe_to_tf_dataset(train_ds_pd, label=label)
+    rf = tfdf.keras.RandomForestModel(hyperparameter_template="benchmark_rank1")
+    rf.fit(x=train_ds)
+    return rf
+
+# Función principal
+def main():
+    ruta_archivo = 'train.csv'  # Ruta al archivo de datos
+    label = 'Transported'  # Nombre de la columna objetivo
+    dataset_df = cargar_datos(ruta_archivo)
+    train_ds_pd, valid_ds_pd = dividir_conjunto_datos(dataset_df)
+    modelo_entrenado = entrenar_modelo(train_ds_pd, label)
+    # Puedes hacer más con el modelo aquí (predicciones, evaluación, etc.)
+
+if __name__ == '__main__':
+    main()  # Llama a la función principal
